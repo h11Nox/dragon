@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" android:weightSum="1">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content" android:layout_margin="15dp" android:layout_weight="0.17"
+                  android:id="@+id/textLayout">
+
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="You have to move the dragon to the cave."
+                android:id="@+id/textView" android:layout_gravity="center_horizontal"
+                android:background="@color/level" android:padding="15dp"/>
+    </LinearLayout>
+</LinearLayout>

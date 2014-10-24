@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="field_bg">#dddddd</color>
+    <color name="level">#ff0586dd</color>
+    <color name="move">#ff0586dd</color>
+    <color name="line">#D6D6D6</color>
+    <color name="line_selected">#0E61C0</color>
+</resources>
