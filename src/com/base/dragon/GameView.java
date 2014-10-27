@@ -45,7 +45,7 @@ public class GameView extends View {
     public GameView(Context context) {
         super(context);
         this.context = context;
-        currentData = data[level-1];
+        loadData();
     }
 
     /**
@@ -276,6 +276,7 @@ public class GameView extends View {
             move = 0;
             if(this.data.length > this.level){
                 this.level++;
+                loadData();
                 fields.clear();
                 this.initLevels();
 
@@ -288,6 +289,13 @@ public class GameView extends View {
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Load level data
+     */
+    protected void loadData(){
+        currentData = data[level-1];
     }
 
     /**
