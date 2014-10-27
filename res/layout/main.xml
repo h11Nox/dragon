@@ -3,25 +3,25 @@
               android:orientation="vertical"
               android:layout_width="fill_parent"
               android:layout_height="fill_parent"
-        >
+              android:gravity="center|bottom">
 
     <Button
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="Play"
             android:id="@+id/button" android:layout_gravity="center_horizontal" android:onClick="onPlay"/>
     <Button
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="The rules"
             android:id="@+id/button2" android:layout_gravity="center_horizontal" android:onClick="onRules"/>
     <Button
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="About"
             android:id="@+id/button3" android:layout_gravity="center_horizontal" android:onClick="onAbout"/>
     <Button
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:text="Exit"
             android:id="@+id/button4" android:layout_gravity="center_horizontal" android:onClick="onAppExit"/>
