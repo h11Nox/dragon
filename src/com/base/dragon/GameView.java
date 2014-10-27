@@ -184,17 +184,17 @@ public class GameView extends View {
         // Show Move
         int moveTextX = canvasWidth - 25;
         int moveTextY = 70;
+        if (!isPortrait){
+            moveTextX = fieldSize + 25;
+            moveTextY = 122;
+        }
 
         if (move > 0) {
             Paint moveText = new Paint();
             moveText.setColor(this.getResources().getColor(R.color.move));
             moveText.setTextSize(52);
-            moveText.setTextAlign(Paint.Align.RIGHT);
-            if (!isPortrait){
-                moveTextX = fieldSize + 25;
-                moveTextY = 122;
-                moveText.setTextAlign(Paint.Align.LEFT);
-            }
+            moveText.setTextAlign(isPortrait ? Paint.Align.RIGHT : Paint.Align.LEFT);
+
             canvas.drawText(String.valueOf(this.move) + " " + (this.move == 1 ? "move" : "moves"), moveTextX, moveTextY, moveText);
         }
 
