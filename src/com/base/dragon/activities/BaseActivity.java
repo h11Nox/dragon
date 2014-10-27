@@ -27,10 +27,28 @@ public class BaseActivity extends GameBaseActivity {
         startActivity(intent);
     }
 
-    public void onAbout(View view){
+    /*public void onAbout(View view){
         Intent intent = new Intent(this, AboutActivity.class);
         startActivity(intent);
+    }*/
+
+    public void onAbout(View v){
+        AlertDialog.Builder builder = new AlertDialog.Builder(BaseActivity.this);
+        builder.setTitle("Dragon")
+                .setMessage("The game was created by Sergiy Radykhovsky.  If you have any suggestions you can email to radykhovsky@gmail.com")
+                .setIcon(R.drawable.ic_launcher)
+                .setCancelable(false)
+                .setNegativeButton("Ok",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int id){
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
+
+
 
     public void onAppExit(View view){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

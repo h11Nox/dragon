@@ -182,12 +182,20 @@ public class GameView extends View {
         canvas.drawText("Level: " + String.valueOf(this.level), levelTextX, levelTextY, levelText);
 
         // Show Move
+        int moveTextX = canvasWidth - 25;
+        int moveTextY = 70;
+
         if (move > 0) {
             Paint moveText = new Paint();
             moveText.setColor(this.getResources().getColor(R.color.move));
             moveText.setTextSize(52);
             moveText.setTextAlign(Paint.Align.RIGHT);
-            canvas.drawText(String.valueOf(this.move) + " " + (this.move == 1 ? "move" : "moves"), canvasWidth - 25, 70, moveText);
+            if (!isPortrait){
+                moveTextX = fieldSize + 25;
+                moveTextY = 122;
+                moveText.setTextAlign(Paint.Align.LEFT);
+            }
+            canvas.drawText(String.valueOf(this.move) + " " + (this.move == 1 ? "move" : "moves"), moveTextX, moveTextY, moveText);
         }
 
         // Get Line Paint
