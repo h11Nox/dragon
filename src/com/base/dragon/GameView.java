@@ -2,6 +2,7 @@ package com.base.dragon;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.graphics.*;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -10,9 +11,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GameView extends View {
 
@@ -28,13 +27,16 @@ public class GameView extends View {
         {0,4,5,3,3,1,4,2,5,2,2,1,2,1,4,6}
     };
     // Game size properties
-    private int fieldSize, cellSize, lineWidth=5, cellFullSize, unitSize = 150, fieldXPosition = 0, fieldYPosition = 100;
+    private int fieldSize, cellSize, lineWidth=5, cellFullSize, unitSize = 150, fieldXPosition = 0, fieldYPosition = 0;
     // Units
-    private Bitmap units, backBtn;
-    private int move = 0, moves = 0, width;
+    private Bitmap units;
+    private int move = 0, moves = 0;
 
     private Context context;
     private List<GameField> fields = new ArrayList<GameField>();
+    private int[] currentData;
+    private int canvasWidth, canvasHeight;
+    private boolean isPortrait = true;
 
     /**
      * Constructor
@@ -43,13 +45,14 @@ public class GameView extends View {
     public GameView(Context context) {
         super(context);
         this.context = context;
+        currentData = data[level-1];
     }
 
     /**
      * Game init
      */
-    public void init(int w, int h){
-        initSize(w,h);
+    public void init(){
+        initSize();
         initLevels();
     }
 
@@ -61,8 +64,13 @@ public class GameView extends View {
      * @param oldh
      */
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        width = w;
-        init(w,h);
+        isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+        if(isPortrait){
+            fieldYPosition = 100;
+        }
+        canvasWidth = w;
+        canvasHeight = h;
+        init();
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -109,12 +117,12 @@ public class GameView extends View {
                     .decodeStream(inputStream, null, options);
             inputStream.close();
 
-            InputStream backBtnStream = assetManager.open("backBtn.png");
+            /*InputStream backBtnStream = assetManager.open("backBtn.png");
             BitmapFactory.Options btnOptions = new BitmapFactory.Options();
             btnOptions.inPreferredConfig = Bitmap.Config.ARGB_4444;
             backBtn = BitmapFactory
                     .decodeStream(backBtnStream, null, btnOptions);
-            backBtnStream.close();
+            backBtnStream.close();*/
 
 
         } catch (IOException e) {
@@ -127,9 +135,9 @@ public class GameView extends View {
     /**
      * Calculating sizes
      */
-    private void initSize(int w, int h){
-        float width = (w - (2 + 2*size) * lineWidth)/size;
-        cellSize = (int)width;
+    private void initSize(){
+        float cell = (Math.min(canvasWidth, canvasHeight) - (2 + 2*size) * lineWidth)/size;
+        cellSize = (int)cell;
         cellFullSize = cellSize + 2 * lineWidth;
         fieldSize = size * cellFullSize + 2 * lineWidth;
     }
@@ -138,7 +146,6 @@ public class GameView extends View {
      * Init levels
      */
     protected void initLevels(){
-        int[] currentData = data[level-1];
         int i,j;
         for(i=0; i<size;i++){
             for(j=0; j<size;j++){
@@ -164,18 +171,23 @@ public class GameView extends View {
         this.loadResources();
 
         // Show Level
+        int levelTextX = 25, levelTextY = 70;
+        if(!isPortrait){
+            levelTextX = fieldSize + levelTextX;
+        }
+
         Paint levelText = new Paint();
         levelText.setColor(this.getResources().getColor(R.color.level));
         levelText.setTextSize(52);
-        canvas.drawText("Level: "+String.valueOf(this.level), 25, 70, levelText);
+        canvas.drawText("Level: " + String.valueOf(this.level), levelTextX, levelTextY, levelText);
 
         // Show Move
-        if(move > 0){
+        if (move > 0) {
             Paint moveText = new Paint();
             moveText.setColor(this.getResources().getColor(R.color.move));
             moveText.setTextSize(52);
             moveText.setTextAlign(Paint.Align.RIGHT);
-            canvas.drawText(String.valueOf(this.move)+" "+(this.move == 1 ? "move" : "moves"), width-25, 70, moveText);
+            canvas.drawText(String.valueOf(this.move) + " " + (this.move == 1 ? "move" : "moves"), canvasWidth - 25, 70, moveText);
         }
 
         // Get Line Paint
@@ -197,7 +209,7 @@ public class GameView extends View {
         // canvas.drawBitmap(backBtn, 30, fieldSize + fieldYPosition + 30, null);
 
         units.recycle();
-        backBtn.recycle();
+        // backBtn.recycle();
     }
 
     /**
@@ -258,13 +270,56 @@ public class GameView extends View {
                 this.level++;
                 fields.clear();
                 this.initLevels();
+
+                // ToDo - Do level changing animation
                 invalidate();
             }
             else{
-
+                // ToDo - Show win message
             }
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Get Current State Data
+     * @return
+     */
+    public Map getCurrentData(){
+        Map data = new HashMap<String, Integer>();
+        data.put("level", level);
+        data.put("move", move);
+        data.put("moves", moves);
+
+        return data;
+    }
+
+    /**
+     * Get Game Fields
+     * @return
+     */
+    public int[] getUnits(){
+        int[] data = new int[size*size];
+        int index=0;
+        for (GameField field : fields) {
+            data[index] = field.getUnit();
+            index++;
+        }
+        return data;
+    }
+
+    /**
+     * Load Level
+     * @param level     - Level
+     * @param move      - Current Move
+     * @param moves     - Total moves count
+     * @param data      - Units
+     */
+    public void load(int level, int move, int moves, int[] data){
+        this.level = level;
+        this.move = move;
+        this.moves = moves;
+        this.currentData = data;
     }
 }

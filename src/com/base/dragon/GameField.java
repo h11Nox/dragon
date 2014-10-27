@@ -78,6 +78,14 @@ public class GameField {
     }
 
     /**
+     * Get unit type
+     * @return int
+     */
+    public int getUnit(){
+        return this.type;
+    }
+
+    /**
      * Get field index
      * @return int
      */
