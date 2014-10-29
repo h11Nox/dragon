@@ -6,14 +6,18 @@ import android.content.res.Configuration;
 import android.graphics.*;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-public class GameView extends View {
+public class GameView extends SurfaceView{
+    GameThread renderThread = null;
+    SurfaceHolder holder;
+    volatile boolean running = false;
 
     // Game Field size
     public static final int size = 4;
@@ -21,10 +25,10 @@ public class GameView extends View {
     private int level = 1, selected = -1;
     // Levels data
     private int[][] data = {
-        {0,5,1,4,2,3,1,5,4,1,4,3,2,0,4,6},
-        {0,5,1,4,2,3,1,5,4,1,4,3,2,2,3,6},
-        {0,4,2,3,5,2,1,5,3,1,3,4,2,1,3,6},
-        {0,4,5,3,3,1,4,2,5,2,2,1,2,1,4,6}
+            {0,5,1,4,2,3,1,5,4,1,4,3,2,0,4,6},
+            {0,5,1,4,2,3,1,5,4,1,4,3,2,2,3,6},
+            {0,4,2,3,5,2,1,5,3,1,3,4,2,1,3,6},
+            {0,4,5,3,3,1,4,2,5,2,2,1,2,1,4,6}
     };
     // Game size properties
     private int fieldSize, cellSize, lineWidth=5, cellFullSize, unitSize = 150, fieldXPosition = 0, fieldYPosition = 0;
@@ -38,19 +42,71 @@ public class GameView extends View {
     private int canvasWidth, canvasHeight;
     private boolean isPortrait = true;
 
-    /**
-     * Constructor
-     * @param context
-     */
     public GameView(Context context) {
         super(context);
         this.context = context;
         loadData();
+
+        holder = getHolder();
+        renderThread = new GameThread(this);
+        holder.addCallback(new SurfaceHolder.Callback() {
+
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                boolean retry = true;
+                renderThread.setRunning(false);
+                while (retry) {
+                    try {
+                        renderThread.join();
+                        retry = false;
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+
+            public void surfaceCreated(SurfaceHolder holder) {
+                renderThread.setRunning(true);
+                renderThread.start();
+            }
+
+            public void surfaceChanged(SurfaceHolder holder, int format,
+                                       int width, int height) {
+            }
+        });
+
+        loadResources();
+    }
+
+    public void resume() {
+        running = true;
+
+        renderThread.start();
+        run();
+    }
+
+    public void run() {
+        while(running) {
+            if(!holder.getSurface().isValid())
+                continue;
+
+            Canvas canvas = holder.lockCanvas();
+            canvas.drawRGB(255, 255, 0);
+            holder.unlockCanvasAndPost(canvas);
+        }
+    }
+    public void pause() {
+        running = false;
+        while(true) {
+            try {
+                renderThread.join();
+            } catch (InterruptedException e) {
+                // retry
+            }
+        }
     }
 
     /**
-     * Game init
-     */
+    * Game init
+    */
     public void init(){
         initSize();
         initLevels();
@@ -77,7 +133,6 @@ public class GameView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drawLevel(canvas);
-        invalidate();
     }
 
     @Override
@@ -116,13 +171,6 @@ public class GameView extends View {
             units = BitmapFactory
                     .decodeStream(inputStream, null, options);
             inputStream.close();
-
-            /*InputStream backBtnStream = assetManager.open("backBtn.png");
-            BitmapFactory.Options btnOptions = new BitmapFactory.Options();
-            btnOptions.inPreferredConfig = Bitmap.Config.ARGB_4444;
-            backBtn = BitmapFactory
-                    .decodeStream(backBtnStream, null, btnOptions);
-            backBtnStream.close();*/
 
 
         } catch (IOException e) {
@@ -168,8 +216,8 @@ public class GameView extends View {
      * @param canvas
      */
     public void drawLevel(Canvas canvas){
-        this.loadResources();
 
+        canvas.drawColor(Color.BLACK);
         // Show Level
         int levelTextX = 25, levelTextY = 70;
         if(!isPortrait){
@@ -212,12 +260,6 @@ public class GameView extends View {
 
             canvas.drawBitmap(units, field.getSourceRect(unitSize), field.getDestRect(cellSize), null);
         }
-
-        // Draw Back Button
-        // canvas.drawBitmap(backBtn, 30, fieldSize + fieldYPosition + 30, null);
-
-        units.recycle();
-        // backBtn.recycle();
     }
 
     /**
@@ -248,7 +290,7 @@ public class GameView extends View {
         else{
             if(field.select()){
                 selected = field.getIndex();
-                invalidate();
+                //invalidate();
             }
         }
     }
@@ -262,7 +304,7 @@ public class GameView extends View {
             field.deselect();
         }
         selected = -1;
-        invalidate();
+        //invalidate();
     }
 
     /**
@@ -281,7 +323,7 @@ public class GameView extends View {
                 this.initLevels();
 
                 // ToDo - Do level changing animation
-                invalidate();
+                // invalidate();
             }
             else{
                 // ToDo - Show win message
