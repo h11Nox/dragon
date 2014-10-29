@@ -48,28 +48,34 @@ public class GameView extends SurfaceView{
         loadData();
 
         holder = getHolder();
-        renderThread = new GameThread(this);
         holder.addCallback(new SurfaceHolder.Callback() {
 
             public void surfaceDestroyed(SurfaceHolder holder) {
-                boolean retry = true;
                 renderThread.setRunning(false);
+                boolean retry = true;
                 while (retry) {
                     try {
+                        running = false;
+                        holder.lockCanvas();
                         renderThread.join();
                         retry = false;
                     } catch (InterruptedException e) {
                     }
                 }
+                Log.i("dev", "surface-destroyed");
             }
 
             public void surfaceCreated(SurfaceHolder holder) {
+                Log.i("dev", "surface-created");
+                init();
                 renderThread.setRunning(true);
                 renderThread.start();
+                running = true;
             }
 
             public void surfaceChanged(SurfaceHolder holder, int format,
                                        int width, int height) {
+                Log.i("dev", "surface-changed");
             }
         });
 
@@ -120,13 +126,15 @@ public class GameView extends SurfaceView{
      * @param oldh
      */
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        renderThread = new GameThread(this);
+        Log.i("dev", "size-changed");
         isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
         if(isPortrait){
             fieldYPosition = 100;
         }
         canvasWidth = w;
         canvasHeight = h;
-        init();
+
         super.onSizeChanged(w, h, oldw, oldh);
     }
 
@@ -188,6 +196,8 @@ public class GameView extends SurfaceView{
         cellSize = (int)cell;
         cellFullSize = cellSize + 2 * lineWidth;
         fieldSize = size * cellFullSize + 2 * lineWidth;
+        System.out.print(canvasWidth);
+        System.out.print(canvasHeight);
     }
 
     /**
@@ -216,6 +226,8 @@ public class GameView extends SurfaceView{
      * @param canvas
      */
     public void drawLevel(Canvas canvas){
+        if(!holder.getSurface().isValid() || !running)
+            return;
 
         canvas.drawColor(Color.BLACK);
         // Show Level
