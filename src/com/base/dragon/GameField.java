@@ -33,8 +33,9 @@ public class GameField {
     private int x, y, endX, endY, currentX, currentY;
     // View
     private GameView view;
-    protected GameField swapField;
-    protected boolean needSwap = false;
+
+    public GameField swapField;
+    public boolean needSwap = false;
 
     /**
      * Constructor
@@ -327,8 +328,6 @@ public class GameField {
         isMoving = false;
         positionX = 0;
         positionY = 0;
-        currentX = x;
-        currentY = y;
     }
 
     /**
@@ -369,7 +368,15 @@ public class GameField {
         // Set the program need to swap fields at the end
         setIsMoving(true);
         setMovePosition(field);
-        swapField = field;
-        needSwap = true;
+
+        // To fix animation bug have to check if the field will be rendered after need to set like the main field another one
+        if(getIndex() > field.getIndex()){
+            needSwap = true;
+            swapField = field;
+        }
+        else{
+            field.needSwap = true;
+            field.swapField = this;
+        }
     }
 }
