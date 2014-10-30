@@ -4,6 +4,8 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 
+import java.security.acl.LastOwnerException;
+
 public class GameField {
 
     /*
@@ -17,7 +19,7 @@ public class GameField {
     public final static int TYPE_WALL = 5;
     public final static int TYPE_CAVE = 6;
 
-    private final static double ANIMATION_SPEED = 0.0005;
+    private final static double ANIMATION_SPEED = 20;
     protected double positionX = 0, positionY = 0;
 
     // Unit type
@@ -28,9 +30,11 @@ public class GameField {
     private int index, padding = 5;
     // Unit coordinates
     private int i,j;
-    private int x, y, endX, endY;
+    private int x, y, endX, endY, currentX, currentY;
     // View
     private GameView view;
+    protected GameField swapField;
+    protected boolean needSwap = false;
 
     /**
      * Constructor
@@ -59,6 +63,9 @@ public class GameField {
         this.y = y;
         this.endX = endX;
         this.endY = endY;
+
+        currentX = x;
+        currentY = y;
     }
 
     /**
@@ -70,6 +77,9 @@ public class GameField {
         y = data[1];
         endX = data[2];
         endY = data[3];
+
+        currentX = x;
+        currentY = y;
     }
 
     /**
@@ -224,7 +234,7 @@ public class GameField {
      */
     public Rect getDestRect(int cellSize){
         Rect destRect = new Rect();
-        destRect.set(x + padding + (int)positionX, y + padding + (int)positionY, x + cellSize - padding + (int)positionX, y + cellSize - padding + (int)positionY);
+        destRect.set(currentX + padding, currentY + padding, currentX + cellSize - padding, currentY + cellSize - padding);
 
         return destRect;
     }
@@ -274,64 +284,50 @@ public class GameField {
     }
 
     /**
-     * Start animation
-     * @param field - Field
-     */
-    public void startMove(GameField field){
-
-        boolean isFieldMoving = true;
-        field.setIsMoving(true);
-        setIsMoving(true);
-
-        while(isFieldMoving){
-            field.move(this);
-            if(!move(field)){
-                isFieldMoving = false;
-                field.finishMove();
-                finishMove();
-
-                endMove(field);
-            }
-        }
-    }
-
-    /**
      * Make a move
-     * @param field
      * @return
      */
-    public boolean move(GameField field){
-        boolean result = true;
-        int i = field.getI(), j = field.getJ(), finishX = field.getX(), finishY = field.getY();
-        if(i != this.i){
-            int direction = i - this.i;
-            positionX += direction*ANIMATION_SPEED;
-            if((int)(x + positionX) == finishX){
-                result = false;
+    public void move(){
+        if(!isMoving){
+            return;
+        }
+        if(positionX > 0 && currentX != positionX){
+            currentX += positionX > currentX ? ANIMATION_SPEED : -ANIMATION_SPEED;
+            if(Math.abs(currentX - positionX) <= ANIMATION_SPEED){
+                finishMove();
             }
         }
-        else{
-            int direction = j - this.j;
-            positionY += direction*ANIMATION_SPEED;
-            if((int)(y + positionY) == finishY){
-                result = false;
+        if(positionY > 0 && currentY != positionY){
+            currentY += positionY > currentY ? ANIMATION_SPEED : -ANIMATION_SPEED;
+            if(Math.abs(currentY - positionY) <= ANIMATION_SPEED){
+                finishMove();
             }
         }
-
-        /*try {
-            view.renderThread.sleep(10);
-        } catch (Exception e) {}*/
-
-        return result;
     }
 
     /**
      * Finish move
      */
     public void finishMove(){
+        if(needSwap){
+
+            clearMoveData();
+            swapField.clearMoveData();
+
+            endMove(swapField);
+            needSwap = false;
+        }
+    }
+
+    /**
+     * Clear Move Data
+     */
+    public void clearMoveData(){
         isMoving = false;
         positionX = 0;
         positionY = 0;
+        currentX = x;
+        currentY = y;
     }
 
     /**
@@ -353,10 +349,26 @@ public class GameField {
     }
 
     /**
+     * Set Move Position
+     * @param field - Field
+     */
+    public void setMovePosition(GameField field){
+        positionX = field.getX();
+        positionY = field.getY();
+    }
+
+    /**
      * Swapping fields
      * @param field - Game Field
      */
     public void swap(GameField field){
-        startMove(field);
+        field.setIsMoving(true);
+        field.setMovePosition(this);
+
+        // Set the program need to swap fields at the end
+        setIsMoving(true);
+        setMovePosition(field);
+        swapField = field;
+        needSwap = true;
     }
 }

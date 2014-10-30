@@ -264,6 +264,8 @@ public class GameView extends SurfaceView{
 
         for (GameField field : fields) {
 
+            field.move();
+
             Paint unitPaint = new Paint();
             if(field.isMoving()){
                 unitPaint.setAlpha(100);
@@ -287,7 +289,7 @@ public class GameView extends SurfaceView{
                 // int index = field.getIndex();
                 GameField currentField = fields.get(selected);
                 if(field.check(currentField)){
-                    field.swap(currentField);
+                    currentField.swap(field);
                 }
                 else{
                     // Show message about incorrect move
