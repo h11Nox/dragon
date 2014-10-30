@@ -17,6 +17,5 @@
                 android:name=".activities.GameActivity" android:label="GameActivity"
                 android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
         <activity android:name=".activities.RulesActivity"/>
-        <activity android:name=".activities.AboutActivity"/>
     </application>
 </manifest>

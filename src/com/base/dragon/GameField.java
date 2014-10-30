@@ -256,9 +256,10 @@ public class GameField {
      */
     public boolean check(GameField field){
         boolean result = false;
-        if(!isBlocked() && !field.isBlocked()){
+        if((!isBlocked() && !field.isBlocked() )|| (field.type == GameField.TYPE_DRAGON && this.type == TYPE_CAVE) ){
             boolean isAllowed = (this.type != GameField.TYPE_DRAGON && field.type != GameField.TYPE_DRAGON && Math.abs(type - field.type) == 1 )
-                    || ((this.type == GameField.TYPE_DRAGON ^ field.type == GameField.TYPE_DRAGON) && (this.type == GameField.TYPE_RIDER ^ field.type == GameField.TYPE_RIDER));
+                    || ((this.type == GameField.TYPE_DRAGON ^ field.type == GameField.TYPE_DRAGON) && (this.type == GameField.TYPE_RIDER ^ field.type == GameField.TYPE_RIDER))
+                    || ((field.type == GameField.TYPE_DRAGON && this.type == TYPE_CAVE));
             if(isAllowed && field.isNext(i, j)){
                 result = true;
             }

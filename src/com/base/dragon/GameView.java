@@ -1,6 +1,8 @@
 package com.base.dragon;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.*;
@@ -326,7 +328,7 @@ public class GameView extends SurfaceView{
      */
     protected boolean checkIfCompleted(){
         boolean result = false;
-        if(fields.get(size * size - 2).type == GameField.TYPE_DRAGON){
+        if(fields.get(size * size - 1).type == GameField.TYPE_DRAGON){
             moves += move;
             move = 0;
             if(this.data.length > this.level){
@@ -336,6 +338,20 @@ public class GameView extends SurfaceView{
                 this.initLevels();
 
                 // ToDo - Do level changing animation
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Dragon")
+                        .setMessage("Level complete! Press Ok button to continue.")
+                        .setIcon(R.drawable.ic_launcher)
+                        .setCancelable(false)
+                        .setNegativeButton("Ok",
+                                new DialogInterface.OnClickListener(){
+                                    public void onClick(DialogInterface dialog, int id){
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+
                 // invalidate();
             }
             else{

@@ -27,11 +27,6 @@ public class BaseActivity extends GameBaseActivity {
         startActivity(intent);
     }
 
-    /*public void onAbout(View view){
-        Intent intent = new Intent(this, AboutActivity.class);
-        startActivity(intent);
-    }*/
-
     public void onAbout(View v){
         AlertDialog.Builder builder = new AlertDialog.Builder(BaseActivity.this);
         builder.setTitle("Dragon")
