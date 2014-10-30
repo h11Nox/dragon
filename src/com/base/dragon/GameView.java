@@ -338,19 +338,24 @@ public class GameView extends SurfaceView{
                 this.initLevels();
 
                 // ToDo - Do level changing animation
-                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle("Dragon")
-                        .setMessage("Level complete! Press Ok button to continue.")
-                        .setIcon(R.drawable.ic_launcher)
-                        .setCancelable(false)
-                        .setNegativeButton("Ok",
-                                new DialogInterface.OnClickListener(){
-                                    public void onClick(DialogInterface dialog, int id){
-                                        dialog.cancel();
-                                    }
-                                });
-                AlertDialog alertDialog = builder.create();
-                alertDialog.show();
+                renderThread.handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle("Dragon")
+                                .setMessage("Level complete! Press Ok button to continue.")
+                                .setIcon(R.drawable.ic_launcher)
+                                .setCancelable(false)
+                                .setNegativeButton("Ok",
+                                        new DialogInterface.OnClickListener(){
+                                            public void onClick(DialogInterface dialog, int id){
+                                                dialog.cancel();
+                                            }
+                                        });
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                    }
+                });
 
                 // invalidate();
             }
