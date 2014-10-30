@@ -1,6 +1,7 @@
 package com.base.dragon;
 
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 
 public class GameField {
@@ -16,17 +17,20 @@ public class GameField {
     public final static int TYPE_WALL = 5;
     public final static int TYPE_CAVE = 6;
 
+    private final static double ANIMATION_SPEED = 0.0005;
+    protected double positionX = 0, positionY = 0;
+
     // Unit type
     public int type;
     // Is unit selected
-    private boolean selected = false;
+    private boolean selected = false, isMoving = false;
     // Unit index
     private int index, padding = 5;
     // Unit coordinates
     private int i,j;
     private int x, y, endX, endY;
     // View
-    private View view;
+    private GameView view;
 
     /**
      * Constructor
@@ -35,7 +39,7 @@ public class GameField {
      * @param type - type of unit
      * @param view - view
      */
-    public GameField(int i, int j, int type, View view) {
+    public GameField(int i, int j, int type, GameView view) {
         this.i = i;
         this.j = j;
         this.index = GameView.size * j + i;
@@ -107,6 +111,22 @@ public class GameField {
      */
     public int getI(){
         return i;
+    }
+
+    /**
+     * Get X
+     * @return int
+     */
+    public int getX(){
+        return x;
+    }
+
+    /**
+     * Get Y
+     * @return int
+     */
+    public int getY(){
+        return y;
     }
 
     /**
@@ -204,7 +224,7 @@ public class GameField {
      */
     public Rect getDestRect(int cellSize){
         Rect destRect = new Rect();
-        destRect.set(x + padding, y + padding, x + cellSize - padding, y + cellSize - padding);
+        destRect.set(x + padding + (int)positionX, y + padding + (int)positionY, x + cellSize - padding + (int)positionX, y + cellSize - padding + (int)positionY);
 
         return destRect;
     }
@@ -238,26 +258,105 @@ public class GameField {
     }
 
     /**
-     * Swapping fields
-     * @param field - Game Field
-     * @return boolean
+     * Set is moving
+     * @param moving
      */
-    public boolean swap(GameField field){
-        boolean result = false;
-        if(check(field)){
-            int cI = i, cJ = j;
-            int[] coordinates = getCoordinates();
-            this.setPosition(field.getI(), field.getJ());
-            this.setCoordinates(field.getCoordinates());
-            this.deselect();
+    public void setIsMoving(boolean moving){
+        this.isMoving = moving;
+    }
 
-            field.setPosition(cI, cJ);
-            field.setCoordinates(coordinates);
-            field.deselect();
+    /**
+     * If field is moving
+     * @return
+     */
+    public boolean isMoving(){
+        return isMoving;
+    }
 
-            result = true;
+    /**
+     * Start animation
+     * @param field - Field
+     */
+    public void startMove(GameField field){
+
+        boolean isFieldMoving = true;
+        field.setIsMoving(true);
+        setIsMoving(true);
+
+        while(isFieldMoving){
+            field.move(this);
+            if(!move(field)){
+                isFieldMoving = false;
+                field.finishMove();
+                finishMove();
+
+                endMove(field);
+            }
+        }
+    }
+
+    /**
+     * Make a move
+     * @param field
+     * @return
+     */
+    public boolean move(GameField field){
+        boolean result = true;
+        int i = field.getI(), j = field.getJ(), finishX = field.getX(), finishY = field.getY();
+        if(i != this.i){
+            int direction = i - this.i;
+            positionX += direction*ANIMATION_SPEED;
+            if((int)(x + positionX) == finishX){
+                result = false;
+            }
+        }
+        else{
+            int direction = j - this.j;
+            positionY += direction*ANIMATION_SPEED;
+            if((int)(y + positionY) == finishY){
+                result = false;
+            }
         }
 
+        /*try {
+            view.renderThread.sleep(10);
+        } catch (Exception e) {}*/
+
         return result;
+    }
+
+    /**
+     * Finish move
+     */
+    public void finishMove(){
+        isMoving = false;
+        positionX = 0;
+        positionY = 0;
+    }
+
+    /**
+     * End Move
+     * @param field - Field
+     */
+    public void endMove(GameField field){
+        int cI = i, cJ = j;
+        int[] coordinates = getCoordinates();
+        this.setPosition(field.getI(), field.getJ());
+        this.setCoordinates(field.getCoordinates());
+        this.deselect();
+
+        field.setPosition(cI, cJ);
+        field.setCoordinates(coordinates);
+        field.deselect();
+
+        view.move(getIndex(), field.getIndex());
+    }
+
+    /**
+     * Swapping fields
+     * @param field - Game Field
+     */
+    public void swap(GameField field){
+        startMove(field);
     }
 }

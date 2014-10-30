@@ -15,7 +15,7 @@ import java.io.InputStream;
 import java.util.*;
 
 public class GameView extends SurfaceView{
-    GameThread renderThread = null;
+    public GameThread renderThread = null;
     SurfaceHolder holder;
     volatile boolean running = false;
 
@@ -62,11 +62,9 @@ public class GameView extends SurfaceView{
                     } catch (InterruptedException e) {
                     }
                 }
-                Log.i("dev", "surface-destroyed");
             }
 
             public void surfaceCreated(SurfaceHolder holder) {
-                Log.i("dev", "surface-created");
                 init();
                 renderThread.setRunning(true);
                 renderThread.start();
@@ -75,7 +73,6 @@ public class GameView extends SurfaceView{
 
             public void surfaceChanged(SurfaceHolder holder, int format,
                                        int width, int height) {
-                Log.i("dev", "surface-changed");
             }
         });
 
@@ -127,7 +124,6 @@ public class GameView extends SurfaceView{
      */
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         renderThread = new GameThread(this);
-        Log.i("dev", "size-changed");
         isPortrait = getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
         if(isPortrait){
             fieldYPosition = 100;
@@ -267,10 +263,17 @@ public class GameView extends SurfaceView{
         borderSelected.setColor(this.getResources().getColor(R.color.line_selected));
 
         for (GameField field : fields) {
-            canvas.drawRect(
-                    field.getRect(), field.isSelected() ? borderSelected : border);
 
-            canvas.drawBitmap(units, field.getSourceRect(unitSize), field.getDestRect(cellSize), null);
+            Paint unitPaint = new Paint();
+            if(field.isMoving()){
+                unitPaint.setAlpha(100);
+            }
+            else{
+                canvas.drawRect(
+                        field.getRect(), field.isSelected() ? borderSelected : border);
+            }
+
+            canvas.drawBitmap(units, field.getSourceRect(unitSize), field.getDestRect(cellSize), unitPaint);
         }
     }
 
@@ -281,14 +284,10 @@ public class GameView extends SurfaceView{
     protected void select(GameField field){
         if(selected != -1){
             if(!field.isSelected()){
-                int index = field.getIndex();
-                if(field.swap(fields.get(selected))){
-                    Collections.swap(fields, selected, index);
-                    move++;
-                    if(checkIfCompleted()){
-                        this.deselect();
-                        return;
-                    }
+                // int index = field.getIndex();
+                GameField currentField = fields.get(selected);
+                if(field.check(currentField)){
+                    field.swap(currentField);
                 }
                 else{
                     // Show message about incorrect move
@@ -391,5 +390,18 @@ public class GameView extends SurfaceView{
         this.move = move;
         this.moves = moves;
         this.currentData = data;
+    }
+
+    /**
+     * Make a move
+     * @param index1 - Index
+     * @param index2 - Index
+     */
+    public void move(int index1, int index2){
+        Collections.swap(fields, index1, index2);
+        move++;
+        if(checkIfCompleted()){
+            this.deselect();
+        }
     }
 }
