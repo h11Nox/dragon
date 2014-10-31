@@ -1,10 +1,6 @@
-package com.base.dragon;
+package com.base.dragon.main;
 
 import android.graphics.Rect;
-import android.util.Log;
-import android.view.View;
-
-import java.security.acl.LastOwnerException;
 
 public class GameField {
 

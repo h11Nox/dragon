@@ -1,9 +1,11 @@
-package com.base.dragon;
+package com.base.dragon.main;
 
 import android.graphics.Canvas;
+import android.os.Handler;
 
 public class GameThread extends Thread {
-    static final long FPS = 10;
+    public Handler handler = new Handler();
+    static final long FPS = 30;
     private GameView view;
     private boolean running = false;
 

@@ -2,7 +2,7 @@ package com.base.dragon.activities;
 
 import android.os.Bundle;
 import android.view.Window;
-import com.base.dragon.GameView;
+import com.base.dragon.main.GameView;
 
 import java.util.Map;
 

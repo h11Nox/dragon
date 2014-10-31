@@ -8,8 +8,9 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   android:orientation="vertical"
                   android:layout_width="match_parent"
-                  android:layout_height="wrap_content" android:layout_margin="15dp" android:layout_weight="0.01"
-                  android:id="@+id/textLayout" android:weightSum="1">
+                  android:layout_height="wrap_content" android:layout_weight="0.01"
+                  android:id="@+id/textLayout" android:weightSum="1"
+                  android:layout_margin="15dp">
 
 
         <TextView
@@ -18,20 +19,14 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="You have to move the dragon to the cave. There is a list of allowed moves"
                 android:id="@+id/textView" android:layout_gravity="center_horizontal"
-                android:background="@color/level" android:padding="15dp" android:layout_weight="0.07"
-                android:layout_marginBottom="20dp" android:minHeight="120px" android:textAlignment="center"/>
+                android:background="@color/level" android:padding="15dp"
+                android:minHeight="120px" android:textAlignment="center" android:layout_marginBottom="5dp"
+                android:textSize="16dp" android:textIsSelectable="false"/>
         <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/imageView"
                 android:src="@drawable/rules" android:layout_weight="0.05"/>
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Try to use as less move as possible :)"
-                android:id="@+id/textView2" android:layout_gravity="center_horizontal" android:layout_weight="0.07"
-                android:layout_marginTop="20dp" android:textAlignment="center"/>
     </LinearLayout>
 
 </LinearLayout>

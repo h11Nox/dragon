@@ -3,7 +3,9 @@ package com.base.dragon.activities;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import com.base.dragon.R;
 
@@ -23,8 +25,24 @@ public class BaseActivity extends GameBaseActivity {
     }
 
     public void onRules(View view){
-        Intent intent = new Intent(this, RulesActivity.class);
-        startActivity(intent);
+        // Intent intent = new Intent(this, RulesActivity.class);
+        // startActivity(intent);
+        AlertDialog.Builder builder = new AlertDialog.Builder(BaseActivity.this);
+
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        View alertView = inflater.inflate(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT ? R.layout.rules_layout : R.layout.rules_land_layout, null);
+        builder.setView(alertView);
+
+        builder.setTitle("The rules")
+                .setCancelable(false)
+                .setNegativeButton("Ok",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     public void onAbout(View v){

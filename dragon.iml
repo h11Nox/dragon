@@ -3,6 +3,7 @@
   <component name="FacetManager">
     <facet type="android" name="Android">
       <configuration>
+        <option name="APK_PATH" value="/out/production/dragon/dragon.apk" />
         <proGuardCfgFiles>
           <file>file://C:/Program Files/Java/jdk1.8.0_20/tools/proguard/proguard-android.txt</file>
         </proGuardCfgFiles>

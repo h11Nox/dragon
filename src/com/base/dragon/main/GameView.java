@@ -1,4 +1,4 @@
-package com.base.dragon;
+package com.base.dragon.main;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -7,10 +7,13 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.graphics.*;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.*;
 import android.widget.Toast;
+import com.base.dragon.R;
+import com.base.dragon.activities.GameActivity;
+import com.base.dragon.objects.ButtonObject;
+import com.base.dragon.objects.TextObject;
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +32,8 @@ public class GameView extends SurfaceView{
     private int[][] data = {
             {0,5,1,4,2,3,1,5,4,1,4,3,2,0,4,6},
             {0,5,1,4,2,3,1,5,4,1,4,3,2,2,3,6},
+            {0,1,5,3,1,3,1,2,2,4,4,3,5,2,1,6},
+            {0,2,1,5,2,4,1,3,3,1,3,4,4,5,2,6},
             {0,4,2,3,5,2,1,5,3,1,3,4,2,1,3,6},
             {0,4,5,3,3,1,4,2,5,2,2,1,2,1,4,6}
     };
@@ -38,15 +43,19 @@ public class GameView extends SurfaceView{
     private Bitmap units;
     private int move = 0, moves = 0;
 
-    private Context context;
+    public Context context;
     private List<GameField> fields = new ArrayList<GameField>();
+    private List<ButtonObject> buttons = new ArrayList<ButtonObject>();
     private int[] currentData;
     private int canvasWidth, canvasHeight;
     private boolean isPortrait = true;
+    private Game game;
 
     public GameView(Context context) {
         super(context);
         this.context = context;
+        game = new Game(this);
+        // game.load();
         loadData();
 
         holder = getHolder();
@@ -145,20 +154,46 @@ public class GameView extends SurfaceView{
     public boolean onTouchEvent(MotionEvent event) {
         float currentX = event.getX();
         float currentY = event.getY();
-        if(currentX > lineWidth + fieldXPosition && currentX < fieldSize - lineWidth + fieldXPosition
-                && currentY < fieldSize - lineWidth + fieldYPosition && currentY > lineWidth + fieldYPosition) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    for (GameField field : fields) {
-                        if(field.hasPoint(currentX, currentY)){
-                            select(field);
-                            break;
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                for (GameField field : fields) {
+                    if(field.hasPoint(currentX, currentY)){
+                        select(field);
+                        break;
+                    }
+                }
+
+                for (ButtonObject button : buttons) {
+                    if(button.isBounds(currentX, currentY)){
+                        if(button.id == "rules"){
+                            renderThread.handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+                                    LayoutInflater inflater = LayoutInflater.from(context);
+                                    View alertView = inflater.inflate(isPortrait ? R.layout.rules_layout : R.layout.rules_land_layout, null);
+                                    builder.setView(alertView);
+
+                                    builder.setTitle("The rules")
+                                            .setCancelable(false)
+                                            .setNegativeButton("Ok",
+                                                    new DialogInterface.OnClickListener() {
+                                                        public void onClick(DialogInterface dialog, int id) {
+                                                            dialog.cancel();
+                                                        }
+                                                    });
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.show();
+                                }
+                            });
                         }
                     }
+                }
 
-                    break;
-                // ToDo: swipe elements
-            }
+                break;
+            // ToDo: swipe elements
         }
 
         return true;
@@ -194,8 +229,25 @@ public class GameView extends SurfaceView{
         cellSize = (int)cell;
         cellFullSize = cellSize + 2 * lineWidth;
         fieldSize = size * cellFullSize + 2 * lineWidth;
-        System.out.print(canvasWidth);
-        System.out.print(canvasHeight);
+
+        buttons.clear();
+        int rulesX, rulesY;
+        if(isPortrait){
+            rulesX = fieldSize - 2 * lineWidth;
+            rulesY = fieldYPosition + fieldSize + lineWidth;
+        }
+        else{
+            rulesX = fieldSize + 25;
+            rulesY = 150;
+        }
+        ButtonObject rulesButton = new ButtonObject(this, new Canvas(), rulesX, rulesY, "Rules");
+        rulesButton.id = "rules";
+        if(isPortrait){
+            rulesButton.setRightFloat();
+        }
+        rulesButton.draw();
+
+        buttons.add(rulesButton);
     }
 
     /**
@@ -234,10 +286,8 @@ public class GameView extends SurfaceView{
             levelTextX = fieldSize + levelTextX;
         }
 
-        Paint levelText = new Paint();
-        levelText.setColor(this.getResources().getColor(R.color.level));
-        levelText.setTextSize(52);
-        canvas.drawText("Level: " + String.valueOf(this.level), levelTextX, levelTextY, levelText);
+        TextObject levelText = new TextObject(this, canvas, levelTextX, levelTextY, "Level: "+String.valueOf(level));
+        levelText.draw();
 
         // Show Move
         int moveTextX = canvasWidth - 25;
@@ -248,12 +298,11 @@ public class GameView extends SurfaceView{
         }
 
         if (move > 0) {
-            Paint moveText = new Paint();
-            moveText.setColor(this.getResources().getColor(R.color.move));
-            moveText.setTextSize(52);
-            moveText.setTextAlign(isPortrait ? Paint.Align.RIGHT : Paint.Align.LEFT);
-
-            canvas.drawText(String.valueOf(this.move) + " " + (this.move == 1 ? "move" : "moves"), moveTextX, moveTextY, moveText);
+            TextObject moveText = new TextObject(this, canvas, moveTextX, moveTextY, String.valueOf(move)+" "+(move == 1 ? "move" : "moves"));
+            if(isPortrait){
+                moveText.setAlign(Paint.Align.RIGHT);
+            }
+            moveText.draw();
         }
 
         // Get Line Paint
@@ -278,6 +327,11 @@ public class GameView extends SurfaceView{
             }
 
             canvas.drawBitmap(units, field.getSourceRect(unitSize), field.getDestRect(cellSize), unitPaint);
+        }
+
+        for (ButtonObject button : buttons) {
+            button.setCanvas(canvas);
+            button.draw();
         }
     }
 
@@ -305,7 +359,6 @@ public class GameView extends SurfaceView{
         else{
             if(field.select()){
                 selected = field.getIndex();
-                //invalidate();
             }
         }
     }
@@ -319,7 +372,6 @@ public class GameView extends SurfaceView{
             field.deselect();
         }
         selected = -1;
-        //invalidate();
     }
 
     /**
@@ -331,8 +383,10 @@ public class GameView extends SurfaceView{
         if(fields.get(size * size - 1).type == GameField.TYPE_DRAGON){
             moves += move;
             move = 0;
+
             if(this.data.length > this.level){
                 this.level++;
+                game.save();
                 loadData();
                 fields.clear();
                 this.initLevels();
@@ -426,5 +480,13 @@ public class GameView extends SurfaceView{
         if(checkIfCompleted()){
             this.deselect();
         }
+    }
+
+    /**
+     * Set Current Level
+     * @param level - Number of current level
+     */
+    public void setLevel(int level){
+        this.level = level;
     }
 }
