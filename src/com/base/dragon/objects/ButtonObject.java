@@ -79,4 +79,21 @@ public class ButtonObject extends TextObject{
     public boolean isBounds(float x, float y){
         return this.x <= x && this.endX >= x && this.y <= y && this.endY >= y;
     }
+
+    /**
+     * Set Width
+     * @param width - Width
+     */
+    public void setWidth(int width){
+        this.sizeX = width;
+        calculate();
+    }
+
+    /**
+     * Set text
+     * @param text  - Text
+     */
+    public void setText(String text){
+        this.text = text;
+    }
 }

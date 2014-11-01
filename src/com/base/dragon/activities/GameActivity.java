@@ -3,6 +3,9 @@ package com.base.dragon.activities;
 import android.os.Bundle;
 import android.view.Window;
 import com.base.dragon.main.GameView;
+import com.base.dragon.resourses.AndroidFileIO;
+import com.base.dragon.resourses.Assets;
+import com.base.dragon.resourses.Settings;
 
 import java.util.Map;
 
@@ -15,6 +18,9 @@ public class GameActivity extends GameBaseActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         gameView = new GameView(this);
         setContentView(gameView);
+
+        Settings.load(new AndroidFileIO(getApplicationContext()));
+        Assets.load(getAssets());
     }
 
     @Override

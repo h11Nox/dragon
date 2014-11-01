@@ -10,6 +10,7 @@ import android.view.View;
 import com.base.dragon.R;
 
 public class BaseActivity extends GameBaseActivity {
+
     /**
      * Called when the activity is first created.
      */

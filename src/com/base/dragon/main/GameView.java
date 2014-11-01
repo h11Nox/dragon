@@ -13,6 +13,9 @@ import com.base.dragon.R;
 import com.base.dragon.activities.GameActivity;
 import com.base.dragon.objects.ButtonObject;
 import com.base.dragon.objects.TextObject;
+import com.base.dragon.resourses.AndroidFileIO;
+import com.base.dragon.resourses.Assets;
+import com.base.dragon.resourses.Settings;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
@@ -49,7 +52,7 @@ public class GameView extends SurfaceView{
     private int[] currentData;
     private int canvasWidth, canvasHeight;
     private boolean isPortrait = true;
-    private Game game;
+    public Game game;
 
     public GameView(Context context) {
         super(context);
@@ -166,7 +169,7 @@ public class GameView extends SurfaceView{
 
                 for (ButtonObject button : buttons) {
                     if(button.isBounds(currentX, currentY)){
-                        if(button.id == "rules"){
+                        if(button.id == "rules") {
                             renderThread.handler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -188,6 +191,14 @@ public class GameView extends SurfaceView{
                                     alertDialog.show();
                                 }
                             });
+                        }
+                        else if(button.id == "sound"){
+                            Settings.changeSound(new AndroidFileIO(context));
+                            buttons.get(1).setText("Music: "+(Settings.isSoundEnabled ? "ON" : "OFF"));
+                        }
+
+                        if(Settings.isSoundEnabled){
+                            Assets.click.play(1);
                         }
                     }
                 }
@@ -231,23 +242,34 @@ public class GameView extends SurfaceView{
         fieldSize = size * cellFullSize + 2 * lineWidth;
 
         buttons.clear();
-        int rulesX, rulesY;
+
+        int rulesX, rulesY, soundX, soundY;
         if(isPortrait){
             rulesX = fieldSize - 2 * lineWidth;
             rulesY = fieldYPosition + fieldSize + lineWidth;
+
+            soundX = rulesX - 250;
+            soundY = rulesY;
         }
         else{
             rulesX = fieldSize + 25;
             rulesY = 150;
+
+            soundX = rulesX + 120;
+            soundY = rulesY;
         }
         ButtonObject rulesButton = new ButtonObject(this, new Canvas(), rulesX, rulesY, "Rules");
         rulesButton.id = "rules";
         if(isPortrait){
             rulesButton.setRightFloat();
         }
-        rulesButton.draw();
+
+        ButtonObject soundButton = new ButtonObject(this, new Canvas(), soundX, soundY, "Music: "+(Settings.isSoundEnabled ? "ON" : "OFF"));
+        soundButton.setWidth(130);
+        soundButton.id = "sound";
 
         buttons.add(rulesButton);
+        buttons.add(soundButton);
     }
 
     /**
@@ -351,6 +373,9 @@ public class GameView extends SurfaceView{
                     // Show message about incorrect move
                     Toast toast = Toast.makeText(context, "Incorrect move", Toast.LENGTH_SHORT);
                     toast.show();
+                    if(Settings.isSoundEnabled){
+                        Assets.wrong.play(1);
+                    }
                 }
             }
             field.deselect();
@@ -360,6 +385,10 @@ public class GameView extends SurfaceView{
             if(field.select()){
                 selected = field.getIndex();
             }
+        }
+
+        if(Settings.isSoundEnabled){
+            Assets.click.play(1);
         }
     }
 
@@ -391,16 +420,18 @@ public class GameView extends SurfaceView{
                 fields.clear();
                 this.initLevels();
 
-                // ToDo - Do level changing animation
+                if(Settings.isSoundEnabled){
+                    Assets.win.play(1);
+                }
                 renderThread.handler.post(new Runnable() {
                     @Override
                     public void run() {
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
                         builder.setTitle("Dragon")
-                                .setMessage("Level complete! Press Ok button to continue.")
+                                .setMessage("Level has been complete! Press Next button to continue.")
                                 .setIcon(R.drawable.ic_launcher)
                                 .setCancelable(false)
-                                .setNegativeButton("Ok",
+                                .setNegativeButton("Next",
                                         new DialogInterface.OnClickListener(){
                                             public void onClick(DialogInterface dialog, int id){
                                                 dialog.cancel();
@@ -477,6 +508,9 @@ public class GameView extends SurfaceView{
     public void move(int index1, int index2){
         Collections.swap(fields, index1, index2);
         move++;
+        if(Settings.isSoundEnabled){
+            Assets.swap.play(1);
+        }
         if(checkIfCompleted()){
             this.deselect();
         }
