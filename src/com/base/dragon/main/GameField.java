@@ -17,6 +17,7 @@ public class GameField {
 
     private final static double ANIMATION_SPEED = 20;
     protected double positionX = 0, positionY = 0;
+    protected boolean isSingleMove = false;
 
     // Unit type
     public int type;
@@ -314,6 +315,7 @@ public class GameField {
 
             endMove(swapField);
             needSwap = false;
+            isSingleMove = false;
         }
     }
 
@@ -331,17 +333,19 @@ public class GameField {
      * @param field - Field
      */
     public void endMove(GameField field){
-        int cI = i, cJ = j;
+        int cI = i, cJ = j, index = getIndex();
         int[] coordinates = getCoordinates();
         this.setPosition(field.getI(), field.getJ());
         this.setCoordinates(field.getCoordinates());
         this.deselect();
 
         field.setPosition(cI, cJ);
-        field.setCoordinates(coordinates);
+        if(!isSingleMove){
+            field.setCoordinates(coordinates);
+        }
         field.deselect();
 
-        view.move(getIndex(), field.getIndex());
+        view.move(getIndex(), index);
     }
 
     /**
@@ -358,17 +362,25 @@ public class GameField {
      * @param field - Game Field
      */
     public void swap(GameField field){
-        field.setIsMoving(true);
-        field.setMovePosition(this);
+        boolean isLastMove = field.type == TYPE_CAVE;
+
+        if(!isLastMove){
+            field.setIsMoving(true);
+            field.setMovePosition(this);
+        }
 
         // Set the program need to swap fields at the end
         setIsMoving(true);
         setMovePosition(field);
 
         // To fix animation bug have to check if the field will be rendered after need to set like the main field another one
-        if(getIndex() > field.getIndex()){
+        if(getIndex() > field.getIndex() || isLastMove){
             needSwap = true;
             swapField = field;
+
+            if(isLastMove){
+                isSingleMove = true;
+            }
         }
         else{
             field.needSwap = true;

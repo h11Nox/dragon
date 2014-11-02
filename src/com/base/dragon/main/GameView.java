@@ -48,6 +48,7 @@ public class GameView extends SurfaceView{
 
     public Context context;
     private List<GameField> fields = new ArrayList<GameField>();
+    private List<GameField> newFields = new ArrayList<GameField>();
     private List<ButtonObject> buttons = new ArrayList<ButtonObject>();
     private int[] currentData;
     private int canvasWidth, canvasHeight;
@@ -288,8 +289,13 @@ public class GameView extends SurfaceView{
                 GameField field = new GameField(j, i, unit, this);
                 field.setCoordinates(x, y, endX, endY);
 
-                fields.add(field);
+                newFields.add(field);
             }
+        }
+
+        if(fields.isEmpty()){
+            fields.addAll(newFields);
+            newFields.clear();
         }
     }
 
@@ -340,10 +346,9 @@ public class GameView extends SurfaceView{
             field.move();
 
             Paint unitPaint = new Paint();
-            if(field.isMoving()){
+            if (field.isMoving()) {
                 unitPaint.setAlpha(100);
-            }
-            else{
+            } else {
                 canvas.drawRect(
                         field.getRect(), field.isSelected() ? borderSelected : border);
             }
@@ -354,6 +359,12 @@ public class GameView extends SurfaceView{
         for (ButtonObject button : buttons) {
             button.setCanvas(canvas);
             button.draw();
+        }
+
+        if(!newFields.isEmpty()){
+            fields.clear();
+            fields.addAll(newFields);
+            newFields.clear();
         }
     }
 
@@ -409,6 +420,7 @@ public class GameView extends SurfaceView{
      */
     protected boolean checkIfCompleted(){
         boolean result = false;
+
         if(fields.get(size * size - 1).type == GameField.TYPE_DRAGON){
             moves += move;
             move = 0;
@@ -417,7 +429,6 @@ public class GameView extends SurfaceView{
                 this.level++;
                 game.save();
                 loadData();
-                fields.clear();
                 this.initLevels();
 
                 if(Settings.isSoundEnabled){
